@@ -20,9 +20,8 @@
 
 import numpy as np
 from typing import Any
-from sai.stats.features import calc_u, calc_q
+from sai.stats.features import calc_u, calc_q, calc_fd, calc_df
 from sai.utils.preprocessors import DataPreprocessor
-
 
 class FeaturePreprocessor(DataPreprocessor):
     """
@@ -79,9 +78,13 @@ class FeaturePreprocessor(DataPreprocessor):
             raise ValueError(
                 f"Invalid stat_type format: {stat_type}. Expected format 'UXX' or 'QXX' (e.g., 'U50' or 'Q95')."
             )
-        self.stat_prefix = stat_type[0]
-        self.threshold = int(stat_type[1:]) / 100
-
+        self.stat_type = stat_type.lower()
+        if self.stat_type in ["fd", "df"]:
+            self.stat_prefix = self.stat_type
+            self.threshold = None
+        else:
+            self.stat_prefix = stat_type[0].upper()
+            self.threshold = int(stat_type[1:]) / 100
     def run(
         self,
         chr_name: str,
@@ -171,10 +174,22 @@ class FeaturePreprocessor(DataPreprocessor):
                 ploidy=ploidy,
                 anc_allele_available=self.anc_allele_available,
             )
+        elif self.stat_prefix == "fd":
+            print("calc_fd() calculating... :", start, end)
+            result = calc_fd(pos, ref_gts, tgt_gts, src_gts_list)
+            print("calc_fd result:", result)
+            items["statistic"] = result["fd"]
+            items["candidates"] = np.array([])
+
+        elif self.stat_prefix == "df":
+            result = calc_df(pos, ref_gts, tgt_gts, src_gts_list)
+            items["statistic"] = result["df"]
+            items["candidates"] = np.array([])  
         else:
             raise ValueError(
-                f"Invalid stat_type: {self.stat_type}. Must be 'U' or 'QXX' (e.g., 'Q95')."
-            )
+        f"Invalid stat_type: {self.stat_type}. Must be 'U', 'QXX', 'fd', or 'df' (e.g., 'Q95')."
+    )
+
 
         return [items]
 
@@ -187,6 +202,7 @@ class FeaturePreprocessor(DataPreprocessor):
         items : dict[str, Any]
             A dictionary containing feature vectors for a genomic window.
         """
+        print(f"Writing {len(items)} items to {self.output_file}")
         with open(
             self.output_file, "a"
         ) as f:  # Open in append mode for continuous writing

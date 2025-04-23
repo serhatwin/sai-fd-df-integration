@@ -44,40 +44,6 @@ def score(
     stat_type: str,
     num_workers: int,
 ) -> None:
-    """
-    Processes and scores genomic data by generating windowed data and feature vectors.
-
-    Parameters
-    ----------
-    vcf_file : str
-        Path to the VCF file containing variant data.
-    chr_name : str
-        The chromosome name to be analyzed from the VCF file.
-    ref_ind_file : str
-        Path to the file containing reference population identifiers.
-    tgt_ind_file : str
-        Path to the file containing target population identifiers.
-    src_ind_file : str
-        Path to the file containing source population identifiers.
-    win_len : int
-        Length of each genomic window in base pairs.
-    win_step : int
-        Step size in base pairs between consecutive windows.
-    num_src : int
-        Number of source populations to include in each windowed analysis.
-    anc_allele_file : str
-        Path to the file containing ancestral allele information.
-    w : float
-        Frequency threshold for calculating feature vectors.
-    y : list[float]
-        List of frequency thresholds used for various calculations in feature vector processing.
-    output_file : str
-        File path to save the output of processed feature vectors.
-    stat_type: str
-        Specifies the type of statistic to compute.
-    num_workers : int
-        Number of parallel processes for multiprocessing.
-    """
     generator = ChunkGenerator(
         vcf_file=vcf_file,
         chr_name=chr_name,
@@ -112,10 +78,14 @@ def score(
     items = []
 
     for params in generator.get():
-        items.extend(preprocessor.run(**params))
+        print("🧩 DEBUG: Params from generator:", params)
+        result = preprocessor.run(**params)
+        print("📦 DEBUG: Result from preprocessor:", result)
+        items.extend(result)
 
+    print("✅ DEBUG: Total items generated:", len(items))
     preprocessor.process_items(items)
-
+    print("📝 DEBUG: process_items() executed.")
 
 def outlier(score_file: str, output: str, quantile: float) -> None:
     """

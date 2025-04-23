@@ -139,31 +139,30 @@ def existed_file(value: str) -> str:
 
 def validate_stat_type(value: str) -> str:
     """
-    Validate the input `stat_type`.
+    Validates the input `--stat` argument.
 
     Parameters
     ----------
     value : str
-        The statistic type to validate. Must be either:
-        - "U" : Compute the U statistic.
-        - "QXX" : Compute the Q statistic, where "XX" is a one or two-digit integer
-          representing the quantile percentage (e.g., "Q95" for 95th quantile).
+        The statistic type to validate. Must be one of:
+        - "UXX" : U-statistic (e.g., U05 means target allele frequency > 0.5)
+        - "QXX" : Q-statistic (e.g., Q95 means 95th percentile threshold in target)
+        - "fd"  : ABBA/BABA-derived fd statistic
+        - "df"  : Normalized D statistic based on derived allele frequency difference
 
     Returns
     -------
     str
-        The validated `stat_type`, either "U" or "QXX".
+        The validated stat type.
 
     Raises
     ------
     argparse.ArgumentTypeError
-        If the input does not match the expected format ("U" or "QXX").
+        If the input does not match any supported stat type.
     """
-    if re.fullmatch(
-        r"[UQ]\d{2}", value
-    ):  # Matches U or Q followed by exactly two digits
+    if re.fullmatch(r"[UQ]\d{2}", value) or value in ["fd", "df"]:
         return value
-    else:
-        raise argparse.ArgumentTypeError(
-            f"Invalid --stat-type: {value}. Must be 'UXX' or 'QXX' (e.g., 'U05' for x > 0.05, 'Q95' for quantile = 0.95)."
-        )
+    raise argparse.ArgumentTypeError(
+        f"Invalid --stat value: {value}. Must be one of: UXX (e.g., U50), QXX (e.g., Q95), fd, or df."
+    )
+
