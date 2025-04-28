@@ -1,0 +1,11 @@
+.coverage
+.pytest_cache/*
+*__pycache__*
+build/*
+dist/*
+site/*
+*.egg-info/*
+.DS_Store
+sai/utils/.DS_Store
+examples/results/*.tsv
+examples/data/1KG.nea_den.chr9.example.vcf
