@@ -1,0 +1,74 @@
+# run_fd_example.py
+
+import numpy as np
+import allel
+import gzip
+
+from sai.stats.features import calc_fd
+
+# --------------------------
+# Load VCF and extract data
+# --------------------------
+vcf_path = "examples/data/1KG.nea_den.chr9.example.vcf.gz"
+callset = allel.read_vcf(vcf_path, fields=['calldata/GT', 'variants/POS'], alt_number=1)
+
+gts = allel.GenotypeArray(callset['calldata/GT'])
+positions = callset['variants/POS']
+
+# --------------------------
+# Extract sample names
+# --------------------------
+with gzip.open(vcf_path, "rt") as f:
+    for line in f:
+        if line.startswith("#CHROM"):
+            header_fields = line.strip().split("\t")
+            sample_names = header_fields[9:]
+            break
+
+# --------------------------
+# Load individual ID lists
+# --------------------------
+def load_individuals(file_path):
+    with open(file_path) as f:
+        return [line.strip().split('\t')[-1] for line in f if line.strip()]
+
+ref_ids = load_individuals("examples/data/1KG.ref.samples.txt")
+tgt_ids = load_individuals("examples/data/1KG.tgt.samples.txt")
+src_ids = load_individuals("examples/data/1KG.nea_den.samples.txt")
+
+# --------------------------
+# Get indices for each group
+# --------------------------
+ref_idx = [i for i, s in enumerate(sample_names) if s in ref_ids]
+tgt_idx = [i for i, s in enumerate(sample_names) if s in tgt_ids]
+src_idx = [i for i, s in enumerate(sample_names) if s in src_ids]
+
+# --------------------------
+# Extract genotype matrices
+# --------------------------
+ref_gts = gts[:, ref_idx].to_n_alt()
+tgt_gts = gts[:, tgt_idx].to_n_alt()
+src_gts = gts[:, src_idx].to_n_alt()
+
+# --------------------------
+# Calculate fd statistic
+# --------------------------
+fd_value, fd_positions = calc_fd(
+    ref_gts=ref_gts,
+    tgt_gts=tgt_gts,
+    src_gts_list=[src_gts],
+    pos=positions,
+    ploidy=2
+)
+
+# --------------------------
+# Write results to TSV file
+# --------------------------
+output_path = "examples/results/fd_example_result.tsv"
+
+with open(output_path, "w") as f:
+    f.write("fd_value\tused_position_count\tfirst_10_positions\n")
+    f.write(f"{fd_value}\t{len(fd_positions)}\t{','.join(map(str, fd_positions[:10]))}\n")
+
+print(f"✅ fd written to {output_path}")
+

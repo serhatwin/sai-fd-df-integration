@@ -347,52 +347,52 @@ def calc_fd(
     ploidy: int = 1,
     anc_allele_available: bool = False,
 ) -> tuple[float, np.ndarray]:
-    """
-    Calculates fd statistic using genotype matrices.
-    Assumes only one source in src_gts_list.
 
-    Parameters
-    ----------
-    ref_gts, tgt_gts : np.ndarray
-        Genotype arrays (n_sites x n_individuals)
-    src_gts_list : list[np.ndarray]
-        List of one genotype array for the source population.
-    pos : np.ndarray
-        Genomic positions of loci.
-    ploidy : int
-        Organism ploidy (default=1 for phased data).
-    anc_allele_available : bool
-        Placeholder for future implementation (ancestral state logic).
+    print("📌 calc_fd started")
 
-    Returns
-    -------
-    tuple
-        fd value (float), and loci positions (np.ndarray)
-    """
     src_gts = src_gts_list[0]
+    print("ref_gts shape:", ref_gts.shape)
+    print("tgt_gts shape:", tgt_gts.shape)
+    print("src_gts shape:", src_gts.shape)
 
-    # Compute allele frequencies
-    p1 = ref_gts.sum(axis=1) / (ref_gts.shape[1] * ploidy)
-    p2 = tgt_gts.sum(axis=1) / (tgt_gts.shape[1] * ploidy)
-    p3 = src_gts.sum(axis=1) / (src_gts.shape[1] * ploidy)
-    p0 = np.zeros_like(p1)  # Placeholder: ancestral allele frequency (0)
+    try:
+        p1 = ref_gts.sum(axis=1) / (ref_gts.shape[1] * ploidy)
+        p2 = tgt_gts.sum(axis=1) / (tgt_gts.shape[1] * ploidy)
+        p3 = src_gts.sum(axis=1) / (src_gts.shape[1] * ploidy)
+        p0 = np.zeros_like(p1)
+    except Exception as e:
+        print(f"❌ Error while computing allele frequencies: {e}")
+        return np.nan, np.array([])
 
-    # Mask for valid sites
     mask = ~np.isnan(p1) & ~np.isnan(p2) & ~np.isnan(p3)
+    print("✅ Valid sites:", np.sum(mask))
+
     if not np.any(mask):
+        print("🚫 No valid sites.")
         return np.nan, np.array([])
 
     numerator = (p3[mask] - p2[mask]) * (p1[mask] - p0[mask])
     denominator = (p3[mask] - p2[mask]) * (p3[mask] - p0[mask])
 
     valid = denominator != 0
+    print("✅ Valid denominator count:", np.sum(valid))
+
     if not np.any(valid):
+        print("🚫 No valid denominator.")
         return np.nan, np.array([])
 
-    fd_values = numerator[valid] / denominator[valid]
-    used_positions = pos[mask][valid]
+    try:
+        fd_values = numerator[valid] / denominator[valid]
+        used_positions = pos[mask][valid]
+        mean_fd = np.nanmean(fd_values)
 
-    return np.nanmean(fd_values), used_positions
+        print("📈 Mean fd:", mean_fd)
+        print("📍 Positions used:", len(used_positions))
+
+        return mean_fd, used_positions
+    except Exception as e:
+        print(f"❌ Error while calculating fd: {e}")
+        return np.nan, np.array([])
 
 def calc_df(
     ref_gts: np.ndarray,
