@@ -5,3 +5,10 @@ build/*
 dist/*
 site/*
 *.egg-info/*
+<<<<<<< HEAD
+=======
+.DS_Store
+sai/utils/.DS_Store
+examples/results/*.tsv
+examples/data/1KG.nea_den.chr9.example.vcf
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c

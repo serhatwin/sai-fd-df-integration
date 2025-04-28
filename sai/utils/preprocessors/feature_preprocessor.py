@@ -22,6 +22,10 @@ import numpy as np
 from typing import Any
 from sai.stats.features import calc_u, calc_q, calc_fd, calc_df
 from sai.utils.preprocessors import DataPreprocessor
+<<<<<<< HEAD
+=======
+import re
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
 
 class FeaturePreprocessor(DataPreprocessor):
     """
@@ -41,6 +45,7 @@ class FeaturePreprocessor(DataPreprocessor):
         anc_allele_available: bool = False,
     ):
         """
+<<<<<<< HEAD
         Initializes FeatureVectorsPreprocessor with specific frequency thresholds
         and output file for storing generated feature vectors.
 
@@ -66,10 +71,18 @@ class FeaturePreprocessor(DataPreprocessor):
         ValueError
             If `stat_type` is not in a valid format. Must be either: 'UXX' or 'QXX'.
         """
+=======
+        Construct the FeaturePreprocessor.
+
+        See full docstring in source for parameter details.
+        """
+        # ---------- basic attributes ----------
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
         self.w = w
         self.y = y
         self.output_file = output_file
         self.anc_allele_available = anc_allele_available
+<<<<<<< HEAD
         if not (
             len(stat_type) == 3
             and stat_type[0] in {"U", "Q"}
@@ -85,6 +98,24 @@ class FeaturePreprocessor(DataPreprocessor):
         else:
             self.stat_prefix = stat_type[0].upper()
             self.threshold = int(stat_type[1:]) / 100
+=======
+        self.stat_type = stat_type
+        self.stat_prefix = stat_type[0]        # first letter
+
+        # ---------- validate stat_type ----------
+        if not (re.fullmatch(r"[UQ]\d{2}", stat_type) or stat_type in {"fd", "df"}):
+            raise ValueError(
+                f"Invalid stat_type: {stat_type}. "
+                "Allowed: 'UXX', 'QXX', 'fd', or 'df'."
+            )
+
+        # ---------- threshold only for U / Q ----------
+        if self.stat_prefix in {"U", "Q"}:
+            # 'U50' -> 0.50 ; 'Q95' -> 0.95
+            self.threshold = int(stat_type[1:]) / 100
+        else:                                   # fd or df
+            self.threshold = None
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
     def run(
         self,
         chr_name: str,
@@ -150,6 +181,27 @@ class FeaturePreprocessor(DataPreprocessor):
         ):
             items["statistic"] = np.nan
             items["candidates"] = np.array([])
+<<<<<<< HEAD
+=======
+        elif self.stat_type == "fd":
+            # f_d hesapla
+            items["statistic"] = calc_fd(
+                ref_gts=ref_gts,
+                tgt_gts=tgt_gts,
+                src_gts=src_gts_list[0],
+                ploidy=ploidy,
+            )
+            items["candidates"] = np.array([])
+        elif self.stat_type == "df":
+            # d_f hesapla
+            items["statistic"] = calc_df(
+                ref_gts=ref_gts,
+                tgt_gts=tgt_gts,
+                src_gts=src_gts_list[0],
+                ploidy=ploidy,
+            )
+            items["candidates"] = np.array([])
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
         elif self.stat_prefix == "U":
             items["statistic"], items["candidates"] = calc_u(
                 ref_gts=ref_gts,
@@ -174,6 +226,7 @@ class FeaturePreprocessor(DataPreprocessor):
                 ploidy=ploidy,
                 anc_allele_available=self.anc_allele_available,
             )
+<<<<<<< HEAD
         elif self.stat_prefix == "fd":
             print("calc_fd() calculating... :", start, end)
             result = calc_fd(pos, ref_gts, tgt_gts, src_gts_list)
@@ -190,6 +243,12 @@ class FeaturePreprocessor(DataPreprocessor):
         f"Invalid stat_type: {self.stat_type}. Must be 'U', 'QXX', 'fd', or 'df' (e.g., 'Q95')."
     )
 
+=======
+        else:
+            raise ValueError(
+                f"Invalid stat_type: {self.stat_type}. Must be 'U' or 'QXX' (e.g., 'Q95')."
+            )
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
 
         return [items]
 
@@ -202,7 +261,10 @@ class FeaturePreprocessor(DataPreprocessor):
         items : dict[str, Any]
             A dictionary containing feature vectors for a genomic window.
         """
+<<<<<<< HEAD
         print(f"Writing {len(items)} items to {self.output_file}")
+=======
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
         with open(
             self.output_file, "a"
         ) as f:  # Open in append mode for continuous writing

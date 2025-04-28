@@ -139,6 +139,7 @@ def existed_file(value: str) -> str:
 
 def validate_stat_type(value: str) -> str:
     """
+<<<<<<< HEAD
     Validates the input `--stat` argument.
 
     Parameters
@@ -166,3 +167,19 @@ def validate_stat_type(value: str) -> str:
         f"Invalid --stat value: {value}. Must be one of: UXX (e.g., U50), QXX (e.g., Q95), fd, or df."
     )
 
+=======
+    Validate the input `stat_type`.
+    Must be one of:
+      - UXX   (e.g. 'U05', 'U50')
+      - QXX   (e.g. 'Q95', quantile)
+      - fd    (f_d statistic)
+      - df    (distance fraction)
+    """
+    # fd ve df istatistiklerine de izin veriyoruz
+    if re.fullmatch(r"(?:[UQ]\d{2}|fd|df)", value):
+        return value
+    else:
+        raise argparse.ArgumentTypeError(
+            f"Invalid --stat-type: {value}. Must be 'UXX', 'QXX', 'fd' or 'df'."
+        )
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c

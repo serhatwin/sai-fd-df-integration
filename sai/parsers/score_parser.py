@@ -233,6 +233,7 @@ def add_score_parser(subparsers: argparse.ArgumentParser) -> None:
         help="Output file path for saving results.",
     )
     parser.add_argument(
+<<<<<<< HEAD
     "--stat",
     type=validate_stat_type,
     required=True,
@@ -241,5 +242,11 @@ def add_score_parser(subparsers: argparse.ArgumentParser) -> None:
          "QXX means the quantile threshold (e.g., Q95 = 95th percentile). "
          "fd computes the ABBA/BABA-based fd statistic. "
          "df computes a normalized D statistic based on derived allele frequency differences."
+=======
+        "--stat",
+        type=validate_stat_type,
+        required=True,
+        help="Type of statistic to compute: UXX or QXX, where XX is a percentage-like index indicating a threshold in the target population. For example, `U50` means the allele frequency is greater than 0.5, and `Q95` means the allele frequency is greater than or equal to the 95th percentile among sites meeting the specified conditions.",
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
     )
     parser.set_defaults(runner=_run_score)

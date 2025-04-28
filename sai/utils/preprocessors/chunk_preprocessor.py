@@ -137,8 +137,12 @@ class ChunkPreprocessor(DataPreprocessor):
 
         for item in window_generator.get():
             items.extend(self.feature_preprocessor.run(**item))
+<<<<<<< HEAD
        
         print(f"📦 Generated {len(items)} items from ChunkPreprocessor.")
+=======
+
+>>>>>>> c1601a59e3b146409f5797b0b55e9e9bbc155c3c
         return items
 
     def process_items(self, items: list[dict[str, Any]]) -> None:
